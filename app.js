@@ -24,6 +24,8 @@ function initMap() {
     for (let i = 0; i < locations.length; i++) {
         // Get the position from the location array.
         let position = locations[i].location;
+        let lat = position.lat;
+        // let lng
         let title = locations[i].title;
         // Create a marker per location, and put into markers array.
         let marker = new google.maps.Marker({
@@ -51,7 +53,7 @@ function populateInfoWindow(marker, infowindow) {
     // Check to make sure the infowindow is not already opened on this marker.
     if (infowindow.marker != marker) {
         infowindow.marker = marker;
-        infowindow.setContent('<div>' + marker.title + '</div>');
+        infowindow.setContent(`<div> <p>${marker.title}</p> <p>(${marker.position})</p> </div>`);
         infowindow.open(map, marker);
         // Make sure the marker property is cleared if the infowindow is closed.
         infowindow.addListener('closeclick',function(){
