@@ -27,7 +27,6 @@ function initMap() {
         let title = locations[i].title;
         // Create a marker per location, and put into markers array.
         let marker = new google.maps.Marker({
-            map: map,
             position: position,
             title: title,
             animation: google.maps.Animation.DROP,
@@ -39,10 +38,10 @@ function initMap() {
         marker.addListener('click', function() {
         populateInfoWindow(this, largeInfowindow);
         });
-        bounds.extend(markers[i].position);
     }
-    // Extend the boundaries of the map for each marker
-    map.fitBounds(bounds);
+
+    document.getElementById('show-listings').addEventListener('click', showListings);
+    document.getElementById('hide-listings').addEventListener('click', hideListings);
 }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
@@ -58,5 +57,23 @@ function populateInfoWindow(marker, infowindow) {
         infowindow.addListener('closeclick',function(){
         infowindow.setMarker = null;
         });
+    }
+}
+
+// This function will loop through the markers array and display them all.
+function showListings() {
+    let bounds = new google.maps.LatLngBounds();
+    // Extend the boundaries of the map for each marker and display the marker.
+    for (let i = 0; i < markers.length; i++) {
+        markers[i].setMap(map);
+        bounds.extend(markers[i].position);
+    }
+    map.fitBounds(bounds);
+}
+
+// This function will loop through the listings and hide them all.
+function hideListings() {
+    for (let i = 0; i < markers.length; i++) {
+        markers[i].setMap(null);
     }
 }
