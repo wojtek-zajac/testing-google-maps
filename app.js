@@ -14,6 +14,14 @@ function initMap() {
     let marker = new google.maps.Marker({
         position: tribeca,
         map: map,
-        title: 'My first Marker!'
+        title: 'My first Marker!',
+        draggable: true,
+        // animation: google.maps.Animation.BOUNCE
+    });
+    let infowindow = new google.maps.InfoWindow({
+        content: 'Do you ever feel like an InfoWindow, floating through the wind, ready to start again?'
+    });
+    marker.addListener('click', function() {
+        infowindow.open(map, marker);
     });
 }
