@@ -2,6 +2,9 @@ let map;
 // Create a new blank array for all the listing markers.
 let markers = [];
 
+// This global polygon variable is to ensure only ONE polygon is rendered.
+let polygon = null;
+
 function initMap() {
     var styles = [
         {
@@ -90,6 +93,18 @@ function initMap() {
 
     let largeInfowindow = new google.maps.InfoWindow();
 
+    // Initialize the drawing manager.
+    let drawingManager = new google.maps.drawing.DrawingManager({
+        drawingMode: google.maps.drawing.OverlayType.POLYGON,
+        drawingControl: true,
+        drawingControlOptions: {
+          position: google.maps.ControlPosition.TOP_LEFT,
+          drawingModes: [
+            google.maps.drawing.OverlayType.POLYGON
+          ]
+        }
+    });
+
     // Style the markers a bit. This will be our listing marker icon.
     let defaultIcon = makeMarkerIcon('0091ff');
 
@@ -130,6 +145,32 @@ function initMap() {
 
     document.getElementById('show-listings').addEventListener('click', showListings);
     document.getElementById('hide-listings').addEventListener('click', hideListings);
+
+    document.getElementById('toggle-drawing').addEventListener('click', function() {
+        toggleDrawing(drawingManager);
+    });
+
+    // Add an event listener so that the polygon is captured, call the
+    // searchWithPolygon function. This will show the markers in the polygon,
+    // abd hide any outside of it.
+    drawingManager.addListener('overlaycomplete', function(event) {
+        // First, check if there is an existing polygon.
+        // If there is, get rid of it and remove the markers.
+        if (polygon) {
+            polygon.setMap(null);
+            hideListings(markers);
+        }
+        // Swithing the drawing mode to the HAND (i.e., no longer drawing).
+        drawingManager.setDrawingMode(null);
+        // Creating a new editable polygon from the overlay.
+        polygon = event.overlay;
+        polygon.setEditable(true);
+        // Searching within the polygon.
+        searchWithinPolygon();
+        // Make sure the search is re-done if the poly is changed.
+        polygon.getPath().addListener('set_at', searchWithinPolygon);
+        polygon.getPath().addListener('insert_at', searchWithinPolygon);
+    });
 }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
@@ -209,4 +250,31 @@ function makeMarkerIcon(markerColor) {
         new google.maps.Point(10, 34),
         new google.maps.Size(21,34));
     return markerImage;
+}
+
+// This shows and hides (respectively) the drawing options.
+function toggleDrawing(drawingManager) {
+    if (drawingManager.map) {
+        drawingManager.setMap(null);
+        // In case the user drew anything, get rid of the polygon
+        if (polygon !== null) {
+            polygon.setMap(null);
+        }
+    } else {
+        drawingManager.setMap(map);
+    }
+}
+
+
+// This function hides all markers outside the polygon,
+// and shows only the ones within it. This is so that the
+// user can specify an exact area of search.
+function searchWithinPolygon() {
+    for (let i = 0; i < markers.length; i++) {
+        if (google.maps.geometry.poly.containsLocation(markers[i].position, polygon)) {
+            markers[i].setMap(map);
+        } else {
+            markers[i].setMap(null);
+        }
+    }
 }
