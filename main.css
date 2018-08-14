@@ -28,3 +28,8 @@ body {
 .options-box h1 {
     font-size: 1.7rem;
 }
+
+#pano {
+    width: 200px;
+    height: 200px;
+}
